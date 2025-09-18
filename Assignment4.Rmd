@@ -8,6 +8,13 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+```{r}
+attach(iris)
+# ? iris
+X <- iris[,1:4]
+X <- data.matrix(X)
+species <- iris[,5]
+```
 ## Assignment 4
 1. Center the columns of your data using the centering matrix. Call the new matrix Xc.
 ```{r}
