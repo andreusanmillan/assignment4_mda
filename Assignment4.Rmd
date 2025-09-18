@@ -1,0 +1,109 @@
+---
+title: "Assigment 4"
+author: "Andreu San Millan"
+date: "2024-11-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Assignment 4
+1. Center the columns of your data using the centering matrix. Call the new matrix Xc.
+```{r}
+n = dim(X)[1]
+J = diag(rep(1,n))-(1/n) * matrix(1, nrow = n, ncol = n)
+Xc = J %*% X
+```
+
+2. Compute Euclidean  and Scaled Euclidean distances of the observations in Xc.
+```{r}
+dist_eucl <- dist(Xc,method="euclidean")
+Xs <- scale(Xc) #we compute standardized data to compute the scaled Euclidean distance
+dist_scaeucl <- dist(Xs,method="euclidean")
+
+```
+
+3. Do classical MDS using the Scaled Euclidean distance
+```{r}
+#Through a function
+MDS_scaeucl = cmdscale(dist_scaeucl, eig = TRUE,k=3)
+```
+
+4. How many coordinates shall you use?
+```{r}
+library(ggplot2)
+ggp <- ggplot(data = data.frame(x = as.numeric(dist_scaeucl),
+                                y = as.numeric(dist(MDS_scaeucl$points[,1]))), aes(x = x, y = y))+ geom_point() + 
+  geom_abline(intercept = 0, slope = 1) +
+  xlab("True distances") + ylab("Approximated distances") + ggtitle("Shepard plot k=1")
+print(ggp)
+ggp2 <- ggplot(data = data.frame(x = as.numeric(dist_scaeucl),
+                                y = as.numeric(dist(MDS_scaeucl$points[,1:2]))), aes(x = x, y = y))+ geom_point() + geom_abline(intercept = 0, slope = 1) + xlab("True distances") + ylab("Approximated distances") + ggtitle("Shepard plot k=2")
+print(ggp2)
+
+ggp3 <- ggplot(data = data.frame(x = as.numeric(dist_scaeucl),
+                                y = as.numeric(dist(MDS_scaeucl$points[,1:3]))), aes(x = x, y = y))+ geom_point() + geom_abline(intercept = 0, slope = 1) + xlab("True distances") + ylab("Approximated distances") + ggtitle("Shepard plot k=3")
+print(ggp3)
+
+plot(seq(1,5),MDS_scaeucl$eig[1:5],xlab="k",ylab="eigen",main="Eigenvalues")
+```
+
+
+
+
+5. Plot the MDS points in a space based on the number of coordinates you chose. What can you see? 
+
+
+```{r}
+#Through a function
+plot(MDS_scaeucl$points[,1],MDS_scaeucl$points[,2],xlab="Coordinate 1",ylab="Coordinate 2",main="First two coordinates MDS")
+```
+
+Separation in two groups. 
+
+
+
+6. Add to the plots the species of the flower as supplementary information. 
+
+```{r}
+#Through a function
+col <- c("green","blue","red")
+plot(MDS_scaeucl$points[,1],MDS_scaeucl$points[,2],xlab="Coordinate 1",ylab="Coordinate 2",main="First two coordinates MDS",col=col[species],xlim=c(-4,4),ylim=c(-4,4))
+```
+ 7. Do sammon scaling and non-metric scaling.
+
+
+```{r}
+library(MASS)
+MDSsam= sammon(dist_scaeucl)
+library(vegan)
+MDS_nonmetric = metaMDS(dist_scaeucl, k = 2, autotransform = FALSE)
+```
+ 
+ 
+ 8. Plot the results on this extra plots along with supplementary information. 
+
+```{r}
+plot(MDS_scaeucl$points[,1],MDS_scaeucl$points[,2],xlab="Coordinate 1",ylab="Coordinate 2",main="First two coordinates classical MDS",col=col[species],xlim=c(-4,4),ylim=c(-4,4))
+
+plot(MDSsam$points[,1],MDSsam$points[,2],xlab="Coordinate 1",ylab="Coordinate 2",main="First two coordinates MDS- Sammon scaling",col=col[species],xlim=c(-4,4),ylim=c(-4,4))
+
+plot(MDS_nonmetric$points[,1],MDS_nonmetric$points[,2],xlab="Coordinate 1",ylab="Coordinate 2",main="First two coordinates MDS- a non-metric scaling",col=col[species],xlim=c(-4,4),ylim=c(-4,4))
+```
+
+
+9. BONUS Do PCA of the data and compare it to the MDS plots.
+
+
+```{r}
+pc <- prcomp(Xs)$x
+plot(pc[,1],pc[,2],col=col[species],xlab='PC1',ylab='PC2',xlim=c(-4,4),ylim=c(-4,4),main="First two PCs")
+
+#Again I add a comparison with classical MDS
+plot(MDS_scaeucl$points[,1],MDS_scaeucl$points[,2],xlab="Coordinate 1",ylab="Coordinate 2",main="First two coordinates classical MDS",col=col[species],xlim=c(-4,4),ylim=c(-4,4))
+
+plot(pc[,1],-pc[,2],col=col[species],xlab='PC1',ylab='PC2',xlim=c(-4,4),ylim=c(-4,4),main="First two PCs")
+
+```
+
